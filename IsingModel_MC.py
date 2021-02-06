@@ -11,15 +11,28 @@ import matplotlib.pyplot as plt
 # numpy also has built in functionality for lots of things, like random numbers
 import numpy as np
 
+import time
+
+
+"""
+Note:
+
+A lattice is a network of dipoles. Each dipole will interact with specific neighbors according to the Ising Model.
+
+mDim is an integer setting for the number of dimensions of our lattice (ie the number of coordinates mapping each element/dipole in our lattice).
+nSide is an integer setting for the number of dipoles that stretch along each coordinate axis of our lattice.
+
+To implement the Ising Model we use the Monte Carlo algorithm.
+"""
 
 #general methods & functions
-def createAlignedState(N,dim):
-    #a single row vector of N^d ones
-    return np.ones(N**dim)
+def createAlignedState(nSide,mDim):
+    #a single row vector of mDim^d ones
+    return np.ones(nSide**mDim)
 
-def createRandomState(N, mDim):
+def createRandomState(nSide, mDim):
     #a row vector of N^d random -1 or 1's
-    return np.random.choice([-1,1], size = [N**mDim])
+    return np.random.choice([-1,1], size = [nSide**mDim])
 
 def coordToIndex(coord, nSide):
 	"""Use the arity of an nSided lattice to map coordinates to index. 
@@ -160,16 +173,26 @@ def calcTotalEnergy(state,adj):
     #simple matrix multiplication finds the energy, since the adjacency neighbor connects neighbors
     return -np.dot(np.dot(state,adj),state)/2
 
-def pickRandomSite(N,dim):
-    return np.random.randint(N**dim)
+def pickRandomSite(nSide,mDim):
+	""">>>returns a random integer which will be a random dipole-index for a given lattice with nSide and mDim.
+	"""
+    return np.random.randint(nSide**mDim)
 
 def calcDeltaE(state,adj,site):
+	"""State is the current lattice state, adj is the adjacency matrix for the lattice, and site will be a given dipole in the lattice
+		>>>returns a float value
+	
+		This function is primarily used in the isingND function where site will be a randomly selected dipole in the given lattice. 
+		
+		deltaE (change in energy) is the energy change that occurs when a site is changed.  Since this energy depends on the site and it's neighbors
+		we utilize the adjacency matrix to calculate this change in energy.
+	"""
     neighbors=adj[site,:]
     deltaE=2*state[site]*sum(state*neighbors)
     return deltaE
 	
 	
-def isingND(state, adjacencyMatrix, N, dim, T, nSteps):
+def isingND(state, adjacencyMatrix, nSide, mDim, T, nSteps):
 	"""Implements monte carlos algorithm to simulate the Ising Model.
 	   
 	   1. Pick a random site
@@ -190,7 +213,7 @@ def isingND(state, adjacencyMatrix, N, dim, T, nSteps):
     E[0] = calcTotalEnergy(state,adjacencyMatrix)
             
     for t in range(1,nSteps):
-        site = pickRandomSite(N,dim)        
+        site = pickRandomSite(nSide,mDim)        
         deltaE = calcDeltaE(state, adjacencyMatrix, site)
         deltaE_list.append(deltaE)
         #calculate the probability of flipping:
@@ -214,6 +237,9 @@ def isingND(state, adjacencyMatrix, N, dim, T, nSteps):
             E[t] = E[t-1]
             
     return state, E, deltaE_list
+	
+	
+def animate2D(nSide, state, 
 	
 
 
@@ -288,68 +314,3 @@ def meanE_meanM_heatCap_magSus(nSide, mDim, T_init, T_final, nSteps):
     
     return meanEnergy, meanMag, heatCap, magSus
 	
-#Function that plots mean energy, mean magnetization, heat capacity and magnetic susceptibility each with respect to temperature
-#Temperature increments by 0.1 units per Ising implementation
-def meanE_meanM_heatCap_magSus(nSide, mDim, T_init, T_final, nSteps):
-    adj = createAdjMatrix(nSide, mDim)
-    meanEnergy = []
-    meanMag = []
-    heatCap = []
-    magSus = []
-    
-    temp_list = []
-    temp = T_init
-    
-    while temp < T_final:
-        state=createAlignedState(nSide, mDim)
-        #implement the Monte Carlos algorithm
-        finalState,E, deltaE=isingND(state, adj, nSide, mDim, temp, nSteps)
-
-        #calculate the average energy, average magnetization, heat capacity, and magnetic suscpetibility at the end of
-        #each Ising model implementation
-        meanEnergy.append(np.mean(E))
-        
-        #mean is same as sum of each spin state divided by the total number of states: (1D = 10, 2D = 100, 3D= 1000, 4D = 10000)
-        meanMag.append(np.mean(finalState))
-        
-        #meanCap is variance of the energy states
-        heatCap.append(np.var(E))
-        
-        #meanMag is variance of the magnetization state
-        magSus.append(np.var(finalState))
-
-        #collect each incremented temperature used for each implementation of the code
-        temp_list.append(temp)
-        temp = temp + 0.1
-        
-    #plot mean energy vs time
-    plt.plot(temp_list, meanEnergy, 'bo')
-    plt.title("Mean-Energy vs Temperature")
-    plt.xlabel('Temperature')
-    plt.ylabel('Mean-Energy')
-    plt.show()
-
-    #plot mean magnetization vs temperature
-    plt.plot(temp_list, meanMag, 'ro')
-    plt.title("Mean-Magnetization vs Temperature")
-    plt.xlabel('Temperature')
-    plt.ylabel('Mean-Magnetization')
-    plt.show()
-    
-    
-    #plot heat-capacity vs temperature
-    plt.plot(temp_list, heatCap, 'go')
-    plt.title("Heat-Capacity vs Temperature")
-    plt.xlabel('Temperature')
-    plt.ylabel('Heat-Capacity')
-    plt.show()
-    
-    #plot magnetic susceptibility vs temperature
-    plt.plot(temp_list, magSus, 'ro')
-    plt.title("Magnetic Susceptibility vs Temperature")
-    plt.xlabel('Temperature')
-    plt.ylabel('Magnetic Susceptibility')
-    plt.show()
-    
-    
-    return meanEnergy, meanMag, heatCap, magSus
