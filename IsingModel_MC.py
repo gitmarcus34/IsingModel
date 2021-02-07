@@ -1,4 +1,4 @@
-"""Update
+"""This is my new saved program.
 """
 # Control the way that the plots show up
 %matplotlib inline
@@ -180,19 +180,54 @@ def pickRandomSite(nSide,mDim):
 
 def calcDeltaE(state,adj,site):
 	"""State is the current lattice state, adj is the adjacency matrix for the lattice, and site will be a given dipole in the lattice
-		>>>returns a float value
+		>>>returns a float value which represents the energy of a site and its neighbors.
 	
 		This function is primarily used in the isingND function where site will be a randomly selected dipole in the given lattice. 
 		
-		deltaE (change in energy) is the energy change that occurs when a site is changed.  Since this energy depends on the site and it's neighbors
-		we utilize the adjacency matrix to calculate this change in energy.
+		deltaE (change in energy) is calculated after a dipole is either flipped or not flipped through each pass in the Monte Carlo algorithm.  
+		The following things can happen between the site and one of its neighbors each time we pass through the algorithm:
+		
+		1. The site is flipped from -1 to 1
+		initial_energy = (-1)*(1)
+		new_energy = (1)*(1)
+		deltaE = new_energy - initial_energy = (1) - (-1) = 2 
+		
+		2. The site is flipped from (1) to (-1)
+		initial_energy = (1)*(1)
+		new_energy = (-1)*(1)
+		deltaE = new_energy - initial_energy = (-1) - (1) = -2 
+		
+		3. The site is NOT flipped at all
+		initial_energy = (1) or (-1)
+		new_energy = (1) 0r (-1)
+		deltaE = (1)-(1) = 0 or deltaE = (-1)-(-1) = 0
+		
+		Now note if the site has an even number of neighbors then the following instances can happen:
+		
+		1.The initial_energy = 0, 
+		flipping the site will result in new_energy = 0 due to symmetry.  Therefore, the deltaE = 0
+		Example consider the middle site in the following: 
+		(1)(-1)(-1) -> initial_energy = (-1)*(1) + (-1)*(-1) = 0 
+		(1)(1)(-1) -> new_energy = (1)*(1) + (1)*(-1) = 0
+		
+		2. The initial energy is positive or negative:
+		flipping the site will result in new_energy = -1 * initial_energy. Therefore, deltaE = 2*|initial_energy|
+		
+		
+		
+		Essentially the math that follows takes advantage of distribution in the following way:
+		(site*neighbor1 + site*neighbor1 + site*neighbor1 + ... + site*neighborN) = site*(neighbor1 + neighbor2 + ... + neighborN)
+		
+		We collect the neighbors by multiplying state by the corresponding site's row of neighbors in the adjacency matrix.
+		We sum the neighbors together and multiply the sum it by 2*site.  The multiplication of 2 is included because flipping
+		the dipole corresponds to an energy change of 2 units since |(1) - (-1)| = 2.			
 	"""
     neighbors=adj[site,:]
     deltaE=2*state[site]*sum(state*neighbors)
     return deltaE
 	
 	
-def isingND(state, adjacencyMatrix, nSide, mDim, T, nSteps):
+def isingND(state, adjacencyMatrix, nSide, mDim, temperature, nSteps):
 	"""Implements monte carlos algorithm to simulate the Ising Model.
 	   
 	   1. Pick a random site
@@ -200,7 +235,7 @@ def isingND(state, adjacencyMatrix, nSide, mDim, T, nSteps):
 	   3. Set the probability to change or maintain the random site we chose.
 	      -If change in energy between previous state and new state (i.e. deltaE) is less than 0 then the probability to flip is 100%
 		  -If there was no change in energy then the probability to flip will be 1/2
-		  -If deltaE is greater than 0 and temperature T is 0 then the probability to flip is 0%
+		  -If deltaE is greater than 0 and temperature is 0 then the probability to flip is 0%
 		   Otherwise set the probability to flip to e^(-deltaE/T)
 	   4.  Pick a random number between 0 and 1 and if this number is less or equal to our probability to flip then flip the site.
 		   Otherwise keep the lattice state the same.
@@ -223,10 +258,10 @@ def isingND(state, adjacencyMatrix, nSide, mDim, T, nSteps):
             probabilityToFlip=1/2
         #deltaE>0
         else:
-            if T==0:
+            if temperature==0:
                 probabilityToFlip=0
             else:
-                probabilityToFlip=np.exp(-deltaE/T)
+                probabilityToFlip=np.exp(-deltaE/temperature)
             
         #generate a random number, and use it to decide to flip the spin
         #here we are avoiding recalculating the energy at each time step!
@@ -236,10 +271,13 @@ def isingND(state, adjacencyMatrix, nSide, mDim, T, nSteps):
         else:
             E[t] = E[t-1]
             
-    return state, E, deltaE_list
+    return state, E, '_list
 	
 	
-def animate2D(nSide, state, 
+def animate2D(nSide, initial_state)
+	"""create an animation of the ising model
+	"""
+	
 	
 
 
