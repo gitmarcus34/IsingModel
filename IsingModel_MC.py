@@ -1,7 +1,7 @@
 """This is my new saved program.
 """
 # Control the way that the plots show up
-%matplotlib inline
+#matplotlib inline
 
 # Import the plotting commands
 import matplotlib
@@ -35,7 +35,7 @@ def createRandomState(nSide, mDim):
     return np.random.choice([-1,1], size = [nSide**mDim])
 
 def coordToIndex(coord, nSide):
-	"""Use the arity of an nSided lattice to map coordinates to index. 
+    """Use the arity of an nSided lattice to map coordinates to index. 
 		>>>Returns this index.
 		
 		- Coord is an m-dimensional coordinate (m being an arbitrary integer).
@@ -47,7 +47,7 @@ def coordToIndex(coord, nSide):
 		decimel number-index (1*16^4 + 5*16^3 + 13*16^2 + 8*16^1 + 0*16^0) = 89747. 
 		
 		Note that we index from 0 which is the origin coordinate [0,0,...,0].	
-	"""
+    """
     index = 0
     mDim = len(coord)
     for i in range(mDim):
@@ -55,7 +55,7 @@ def coordToIndex(coord, nSide):
     return index
     
 def indexToCoord(index, nSide, mDim):
-	"""Use the arity of an nSided lattice to map index to its coorisponding coordinate in the lattice.
+    """Use the arity of an nSided lattice to map index to its coorisponding coordinate in the lattice.
 		>>>returns this coordinate
 	
 		- nSide is the number of elements along each coordinate axis of the lattice
@@ -70,7 +70,7 @@ def indexToCoord(index, nSide, mDim):
 		element.
 		
 		
-	"""
+    """
     coord = []
     for i in range(mDim):
         coord.append((index % nSide**(mDim-i)) // nSide**(mDim-1-i))
@@ -84,7 +84,7 @@ def indexToCoord2(index, nSide, mDim):
     return coord
 
 def calcNeighborList(index, nSide, mDim):
-	"""return a list of neighbors' indexes for a given element at index in an n-sided lattice with m-dimensions.
+    """return a list of neighbors' indexes for a given element at index in an n-sided lattice with m-dimensions.
 	
 		Neighbors will be defined as those elements that are 1 unit in both directions along every axis.
 		The elements at the boundaries of our lattice will be connected with elements on opposite ends
@@ -94,7 +94,7 @@ def calcNeighborList(index, nSide, mDim):
 		For example, in a 1-D lattice each element will have neighbors to the left and right, while
 		the beginning and the end of the lattice will also be neighbors (like a circle).
 	
-	"""
+    """
     coord = indexToCoord(index, nSide, mDim)
     nList = []
     for i in range(mDim):
@@ -105,7 +105,7 @@ def calcNeighborList(index, nSide, mDim):
     return nList
 
 def createAdjMatrix(nSide, mDim):
-	"""Create a matrix whose rows represent each element-index in our lattice and each column element in the row
+    """Create a matrix whose rows represent each element-index in our lattice and each column element in the row
 	   shall represent each neighbor to the row element where each column corresponds to the element index of the lattice.  
 	   If the column element is 0 then it is not a neighbor to the row element and if the column element is a 1 then it will 
 	   be defined as an adjacency neighbor to the row element.
@@ -125,7 +125,7 @@ def createAdjMatrix(nSide, mDim):
        index 7: [0., 0., 0., 1., 0., 1., 1., 0.]]
 	   
 	  Adjaceny matrices become useful when calculating the total energy of a lattice state.
-	"""
+    """
     adjMatrix = np.zeros([nSide**mDim, nSide**mDim])
     for index in range(nSide**mDim):
         nList = calcNeighborList(index, nSide, mDim)
@@ -133,7 +133,7 @@ def createAdjMatrix(nSide, mDim):
     return adjMatrix
 
 def calcTotalEnergy(state,adj):
-	"""Return the total energy of the system according to Ising Model
+    """Return the total energy of the system according to Ising Model
 	   Energy = sum(state[i]*state[j]) from i,j = (0,0) to (nSide-1,nSide-1)
 	   
 	   We can use matrix multiplication to multiply state by its given adjacency matrix.  This gives
@@ -168,18 +168,18 @@ def calcTotalEnergy(state,adj):
 		
 	#this is State * Adjacency Matrix * State transpose.
     #simple matrix multiplication finds the energy, since the adjacency neighbor connects neighbors
-	"""
+    """
     #this is State * Adjacency Matrix * State transpose.
     #simple matrix multiplication finds the energy, since the adjacency neighbor connects neighbors
     return -np.dot(np.dot(state,adj),state)/2
 
 def pickRandomSite(nSide,mDim):
-	""">>>returns a random integer which will be a random dipole-index for a given lattice with nSide and mDim.
-	"""
+    """>>>returns a random integer which will be a random dipole-index for a given lattice with nSide and mDim.
+    """
     return np.random.randint(nSide**mDim)
 
 def calcDeltaE(state,adj,site):
-	"""State is the current lattice state, adj is the adjacency matrix for the lattice, and site will be a given dipole in the lattice
+    """State is the current lattice state, adj is the adjacency matrix for the lattice, and site will be a given dipole in the lattice
 		>>>returns a float value which represents the energy of a site and its neighbors.
 	
 		This function is primarily used in the isingND function where site will be a randomly selected dipole in the given lattice. 
@@ -221,14 +221,14 @@ def calcDeltaE(state,adj,site):
 		We collect the neighbors by multiplying state by the corresponding site's row of neighbors in the adjacency matrix.
 		We sum the neighbors together and multiply the sum it by 2*site.  The multiplication of 2 is included because flipping
 		the dipole corresponds to an energy change of 2 units since |(1) - (-1)| = 2.			
-	"""
+    """
     neighbors=adj[site,:]
     deltaE=2*state[site]*sum(state*neighbors)
     return deltaE
 	
 	
 def isingND(state, adjacencyMatrix, nSide, mDim, temperature, nSteps):
-	"""Implements monte carlos algorithm to simulate the Ising Model.
+    """Implements monte carlos algorithm to simulate the Ising Model.
 	   
 	   1. Pick a random site
 	   2. Calculate the change in energy from the previous state to the new state.
@@ -242,7 +242,7 @@ def isingND(state, adjacencyMatrix, nSide, mDim, temperature, nSteps):
 		
 		During this algorithm we collect in arrays each change in energy and each energy state after each change in temperature implementation.
 		These two arrays as well as the final state are returned.
-	"""   
+    """   
     deltaE_list = []
     E = np.zeros(nSteps)
     E[0] = calcTotalEnergy(state,adjacencyMatrix)
@@ -271,12 +271,41 @@ def isingND(state, adjacencyMatrix, nSide, mDim, temperature, nSteps):
         else:
             E[t] = E[t-1]
             
-    return state, E, '_list
+    return state, E, deltaE_list
 	
 	
-def animate2D(nSide, initial_state)
-	"""create an animation of the ising model
-	"""
+def animateIsing2D(nSide, initial_state):
+    """create an animation of the ising model
+    """
+    deltaE_list = []
+    E = np.zeros(nSteps)
+    E[0] = calcTotalEnergy(state,adjacencyMatrix)
+            
+    for t in range(1,nSteps):
+        site = pickRandomSite(nSide,mDim)        
+        deltaE = calcDeltaE(state, adjacencyMatrix, site)
+        deltaE_list.append(deltaE)
+        #calculate the probability of flipping:
+        if(deltaE<0):
+            probabilityToFlip=1
+        elif deltaE==0:
+            probabilityToFlip=1/2
+        #deltaE>0
+        else:
+            if temperature==0:
+                probabilityToFlip=0
+            else:
+                probabilityToFlip=np.exp(-deltaE/temperature)
+            
+        #generate a random number, and use it to decide to flip the spin
+        #here we are avoiding recalculating the energy at each time step!
+        if(np.random.rand()<=probabilityToFlip):            
+            state[site]*=-1
+            E[t] = E[t-1] + deltaE
+        else:
+            E[t] = E[t-1]
+            
+    return state, E, deltaE_list
 	
 	
 
@@ -284,11 +313,11 @@ def animate2D(nSide, initial_state)
 #Function that implement plots mean energy, mean magnetization, heat capacity and magnetic susceptibility each with respect to temperature
 #Temperature increments by 0.1 units per Ising implementation
 def meanE_meanM_heatCap_magSus(nSide, mDim, T_init, T_final, nSteps):
-	"""repeatedly implements the Ising Model simulation over a range of temperatures n-Sided and m-dimensional lattices which start with 
+    """repeatedly implements the Ising Model simulation over a range of temperatures n-Sided and m-dimensional lattices which start with 
 	   random configurations.  When each implementation is complete we collect the final states and energies of the lattices and calculate
 	   the mean magnetization, mean energy, magnetic susceptibility, and heat capacity.
 	
-	"""
+    """
     adj = createAdjMatrix(nSide, mDim)
     meanEnergy = []
     meanMag = []
