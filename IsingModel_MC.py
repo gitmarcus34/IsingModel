@@ -7,6 +7,9 @@
 import matplotlib
 import matplotlib.pyplot as plt
 
+#gif writing software
+from array2gif import write_gif
+
 # We will use numpy for arrays because the python lists are kind of obnoxious
 # numpy also has built in functionality for lots of things, like random numbers
 import numpy as np
@@ -274,7 +277,7 @@ def isingND(state, adjacencyMatrix, nSide, mDim, temperature, nSteps):
 	return state, E, deltaE_list
 	
 	
-def animateIsing2D(nSteps, nSide, temperature):
+def animateIsing2D_Data(nSteps, nSide, temperature):
 	"""create an animation of the ising model
 	"""
 	state = createRandomState(nSide, 2)
@@ -284,7 +287,7 @@ def animateIsing2D(nSteps, nSide, temperature):
 	deltaE_list = []
 	E = np.zeros(nSteps)
 	E[0] = calcTotalEnergy(state,adjacencyMatrix) #first entry will be the total energy of the intital state
-	
+	state_data = []
 	
 	for t in range(1,nSteps):
 		site = pickRandomSite(nSide,2)		
@@ -293,11 +296,9 @@ def animateIsing2D(nSteps, nSide, temperature):
 		
 		state_2D = np.array(state)
 		state_2D.shape = (nSide, nSide)
-		time.sleep(0.1)
-
-		plt.imshow(state_2D)
-		plt.show()
-		plt.close()
+		
+		state_data.append(state_2D)
+		
 		#calculate the probability of flipping:
 		if(deltaE<0):
 			probabilityToFlip=1
@@ -318,7 +319,7 @@ def animateIsing2D(nSteps, nSide, temperature):
 		else:
 			E[t] = E[t-1]
 			
-	return state, E, deltaE_list
+	return state_data
 	
 	
 
@@ -393,10 +394,43 @@ def meanE_meanM_heatCap_magSus(nSide, mDim, T_init, T_final, nSteps):
 	
 	
 	return meanEnergy, meanMag, heatCap, magSus
+	
+def convert2DState_Pixel(state_data):
+	data_set = []
+	for state in state_data:
+		for row in state:
+			for dipole in row:
+				print(dipole)
 
 def main():
-        print("running main")
-        animateIsing2D(10, 100, 1)
+        #print("running main")
+        #animateIsing2D(10, 100, 1)
+	nSide = 5
+	mDim = 2
+	temperature = 1
+	nSteps = 3
+	
+	state = createRandomState(nSide, mDim)
+	adj = createAdjMatrix(nSide, mDim)
+	
+	
+	state_data = animateIsing2D_Data(nSteps, nSide, temperature)
+	#print("State data[0] {}".format(state_data[0]))
+	convert2DState_Pixel(state_data)
 
+	dataset = [
+		np.array([
+			[[255, 0, 0], [255, 0, 0]],  # red intensities
+			[[0, 255, 0], [0, 255, 0]],  # green intensities
+			[[0, 0, 255], [0, 0, 255]]   # blue intensities
+		]),
+		np.array([
+			[[0, 0, 255], [0, 0, 255]],
+			[[0, 255, 0], [0, 255, 0]],
+			[[255, 0, 0], [255, 0, 0]]
+		])
+	]
+
+		
 if __name__ == "__main__":
     main()
