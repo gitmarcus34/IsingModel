@@ -276,54 +276,6 @@ def isingND(state, adjacencyMatrix, nSide, mDim, temperature, nSteps):
 			
 	return state, E, deltaE_list
 	
-	
-def animateIsing2D_Data(nSteps, nSide, temperature):
-	"""create an animation of the ising model
-	"""
-	state = createRandomState(nSide, 2)
-	adjacencyMatrix = createAdjMatrix(nSide, 2)
-	
-	
-	deltaE_list = []
-	E = np.zeros(nSteps)
-	E[0] = calcTotalEnergy(state,adjacencyMatrix) #first entry will be the total energy of the intital state
-	state_data = []
-	
-	for t in range(1,nSteps):
-		site = pickRandomSite(nSide,2)		
-		deltaE = calcDeltaE(state, adjacencyMatrix, site)
-		deltaE_list.append(deltaE)
-		
-		state_2D = np.array(state)
-		state_2D.shape = (nSide, nSide)
-		
-		state_data.append(state_2D)
-		
-		#calculate the probability of flipping:
-		if(deltaE<0):
-			probabilityToFlip=1
-		elif deltaE==0:
-			probabilityToFlip=1/2
-		#deltaE>0
-		else:
-			if temperature==0:
-				probabilityToFlip=0
-			else:
-				probabilityToFlip=np.exp(-deltaE/temperature)
-			
-		#generate a random number, and use it to decide to flip the spin
-		#here we are avoiding recalculating the energy at each time step!
-		if(np.random.rand()<=probabilityToFlip):			
-			state[site]*=-1
-			E[t] = E[t-1] + deltaE
-		else:
-			E[t] = E[t-1]
-			
-	return state_data
-	
-	
-
-
 #Function that implement plots mean energy, mean magnetization, heat capacity and magnetic susceptibility each with respect to temperature
 #Temperature increments by 0.1 units per Ising implementation
 def meanE_meanM_heatCap_magSus(nSide, mDim, T_init, T_final, nSteps):
@@ -395,17 +347,81 @@ def meanE_meanM_heatCap_magSus(nSide, mDim, T_init, T_final, nSteps):
 	
 	return meanEnergy, meanMag, heatCap, magSus
 	
-def convert2DState_Pixel(state_data):
-	data_set = []
-	for state in state_data:
-		for row in state:
-			for dipole in row:
-				print(dipole)
+	
+def animateIsing2D_Data(nSteps, nSide, temperature):
+	"""create an animation of the ising model
+	"""
+	state = createRandomState(nSide, 2)
+	adjacencyMatrix = createAdjMatrix(nSide, 2)
+	
+	
+	deltaE_list = []
+	E = np.zeros(nSteps)
+	E[0] = calcTotalEnergy(state,adjacencyMatrix) #first entry will be the total energy of the intital state
+	state_data = []
+	
+	for t in range(1,nSteps):
+		site = pickRandomSite(nSide,2)		
+		deltaE = calcDeltaE(state, adjacencyMatrix, site)
+		deltaE_list.append(deltaE)
+		
+		state_2D = np.array(state)
+		state_2D.shape = (nSide, nSide)
+		
+		state_data.append(state_2D)
+		
+		#calculate the probability of flipping:
+		if(deltaE<0):
+			probabilityToFlip=1
+		elif deltaE==0:
+			probabilityToFlip=1/2
+		#deltaE>0
+		else:
+			if temperature==0:
+				probabilityToFlip=0
+			else:
+				probabilityToFlip=np.exp(-deltaE/temperature)
+			
+		#generate a random number, and use it to decide to flip the spin
+		#here we are avoiding recalculating the energy at each time step!
+		if(np.random.rand()<=probabilityToFlip):			
+			state[site]*=-1
+			E[t] = E[t-1] + deltaE
+		else:
+			E[t] = E[t-1]
+			
+	return state_data
+	
 
+	
+def convert2DState_Pixel(state_data, nSide):
+	data_set = []
+	negPixel = [255,0,0]
+	posPixel = [0, 255, 0]
+	
+	dataset = []
+	
+	#print(state_data[0])
+	
+	imageArray_row = -1
+	for state in state_data:
+		imageArray = np.empty((1, nSide, nSide), list)
+		for row in state:
+			imageArray_row += 1
+			for i in range(nSide):
+				if row[i] == -1:
+					imageArray[0][imageArray_row][i] = negPixel
+				elif row[i] == 1:
+					imageArray[0][imageArray_row][i] = posPixel
+		imageArray_row = -1
+		dataset.append(imageArray)
+		#print(dataset)
+	return dataset	
+		
 def main():
         #print("running main")
         #animateIsing2D(10, 100, 1)
-	nSide = 5
+	nSide = 4
 	mDim = 2
 	temperature = 1
 	nSteps = 3
@@ -415,21 +431,40 @@ def main():
 	
 	
 	state_data = animateIsing2D_Data(nSteps, nSide, temperature)
-	#print("State data[0] {}".format(state_data[0]))
-	convert2DState_Pixel(state_data)
 
-	dataset = [
+	#print("State data[0] {}".format(state_data[0]))
+	dataset = convert2DState_Pixel(state_data, nSide)
+	write_gif(dataset, 'rgbbgr.gif', fps=2)
+	
+	datasetProp = [
 		np.array([
-			[[255, 0, 0], [255, 0, 0]],  # red intensities
-			[[0, 255, 0], [0, 255, 0]],  # green intensities
-			[[0, 0, 255], [0, 0, 255]]   # blue intensities
+			[[255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],
+			[[0, 255, 0], [0, 255, 0], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]] 
 		]),
 		np.array([
-			[[0, 0, 255], [0, 0, 255]],
-			[[0, 255, 0], [0, 255, 0]],
-			[[255, 0, 0], [255, 0, 0]]
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],
+			[[0, 255, 0], [0, 255, 0], [255, 0, 0], [255, 0, 0]],
+			[[255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
+			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]]
 		])
 	]
+	#return datasetProp, dataset
 
 		
 if __name__ == "__main__":
