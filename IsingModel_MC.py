@@ -348,7 +348,7 @@ def meanE_meanM_heatCap_magSus(nSide, mDim, T_init, T_final, nSteps):
 	return meanEnergy, meanMag, heatCap, magSus
 	
 	
-def animateIsing2D_Data(nSteps, nSide, temperature):
+def animateIsing2D_Data(nSteps, nSide, temperature, number_of_images):
 	"""create an animation of the ising model
 	"""
 	state = createRandomState(nSide, 2)
@@ -365,7 +365,9 @@ def animateIsing2D_Data(nSteps, nSide, temperature):
 		deltaE = calcDeltaE(state, adjacencyMatrix, site)
 		deltaE_list.append(deltaE)
 		
-		state_data.append(state)
+		
+		if t%(nSteps/number_of_images) == 0:
+			state_data.append(state)
 
 		#calculate the probability of flipping:
 		if(deltaE<0):
@@ -392,8 +394,8 @@ def animateIsing2D_Data(nSteps, nSide, temperature):
 	
 
 def dipoles_pixelsConvert(state):
-	negPixel = [255,0,0]
-	posPixel = [0,255,0]
+	negPixel = [0,0,0]
+	posPixel = [255,255,255]
 	
 	pixel_state = []
 	for element in state:
@@ -410,29 +412,29 @@ def convert2DState_Pixel(state_data, nSide):
 	for state in state_data:
 		pixel_state = dipoles_pixelsConvert(state)
 		pixel_array = np.array(pixel_state)
-		pixel_array.shape = (nSide, nSide)
+		pixel_array.shape = (nSide, nSide, 3)
 		
 		
 		dataset.append(pixel_array)
-	print("dataset {}".format(dataset))
+	#print("dataset {}".format(dataset))
 		
 	return dataset
 		
 def main():
-	nSide = 4
+	nSide = 30
 	mDim = 2
 	temperature = 1
-	nSteps = 3
+	nSteps = 100
 	
 	state = createRandomState(nSide, mDim)
 	adj = createAdjMatrix(nSide, mDim)
 	
-	
-	state_data = animateIsing2D_Data(nSteps, nSide, temperature)
+	number_of_images = 5
+	state_data = animateIsing2D_Data(nSteps, nSide, temperature, number_of_images)
 	
 	dataset = convert2DState_Pixel(state_data, nSide)
-	#write_gif(dataset, 'rgbbgr.gif', fps=5)
-	#return dataset
+	print("Dataset: {}".format(dataset))
+	write_gif(dataset, 'rgbbgr.gif', fps=5)
 		
 if __name__ == "__main__":
     main()
