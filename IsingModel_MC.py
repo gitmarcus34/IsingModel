@@ -365,11 +365,8 @@ def animateIsing2D_Data(nSteps, nSide, temperature):
 		deltaE = calcDeltaE(state, adjacencyMatrix, site)
 		deltaE_list.append(deltaE)
 		
-		state_2D = np.array(state)
-		state_2D.shape = (nSide, nSide)
-		
-		state_data.append(state_2D)
-		
+		state_data.append(state)
+
 		#calculate the probability of flipping:
 		if(deltaE<0):
 			probabilityToFlip=1
@@ -389,83 +386,51 @@ def animateIsing2D_Data(nSteps, nSide, temperature):
 			E[t] = E[t-1] + deltaE
 		else:
 			E[t] = E[t-1]
-			
+	
+	#print("state data {}".format(state_data))
 	return state_data
 	
 
+def dipoles_pixelsConvert(state):
+	negPixel = [255,0,0]
+	posPixel = [0,255,0]
+	
+	pixel_state = []
+	for element in state:
+		if element == -1:
+			pixel_state.append(negPixel)
+		elif element == 1:
+			pixel_state.append(posPixel)
+	return pixel_state
 	
 def convert2DState_Pixel(state_data, nSide):
-	data_set = []
-	negPixel = [255,0,0]
-	posPixel = [0, 255, 0]
 	
 	dataset = []
 	
-	#print(state_data[0])
-	
-	imageArray_row = -1
 	for state in state_data:
-		imageArray = np.empty((1, nSide, nSide), list)
-		for row in state:
-			imageArray_row += 1
-			for i in range(nSide):
-				if row[i] == -1:
-					imageArray[0][imageArray_row][i] = negPixel
-				elif row[i] == 1:
-					imageArray[0][imageArray_row][i] = posPixel
-		imageArray_row = -1
-		dataset.append(imageArray)
-		#print(dataset)
-	return dataset	
+		pixel_state = dipoles_pixelsConvert(state)
+		pixel_array = np.array(pixel_state)
+		pixel_array.shape = (1, nSide**2, 3)
+		dataset.append(pixel_array)
+	#print("dataset {}".format(dataset))
+		
+	return dataset
 		
 def main():
-        #print("running main")
-        #animateIsing2D(10, 100, 1)
-	nSide = 4
+	nSide = 50
 	mDim = 2
 	temperature = 1
-	nSteps = 3
+	nSteps = 1000
 	
 	state = createRandomState(nSide, mDim)
 	adj = createAdjMatrix(nSide, mDim)
 	
 	
 	state_data = animateIsing2D_Data(nSteps, nSide, temperature)
-
-	#print("State data[0] {}".format(state_data[0]))
-	dataset = convert2DState_Pixel(state_data, nSide)
-	write_gif(dataset, 'rgbbgr.gif', fps=2)
 	
-	datasetProp = [
-		np.array([
-			[[255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],
-			[[0, 255, 0], [0, 255, 0], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]] 
-		]),
-		np.array([
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],
-			[[0, 255, 0], [0, 255, 0], [255, 0, 0], [255, 0, 0]],
-			[[255, 0, 0], [255, 0, 0], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]],  
-			[[0, 0, 255], [0, 0, 255], [255, 0, 0], [255, 0, 0]]
-		])
-	]
-	#return datasetProp, dataset
-
+	dataset = convert2DState_Pixel(state_data, nSide)
+	write_gif(dataset, 'rgbbgr.gif', fps=5)
+	#return dataset
 		
 if __name__ == "__main__":
     main()
