@@ -421,20 +421,20 @@ def convert2DState_Pixel(state_data, nSide):
 	return dataset
 		
 def main():
-	nSide = 30
+	nSide = 10
 	mDim = 2
 	temperature = 1
-	nSteps = 100
+	nSteps = 1000
 	
 	state = createRandomState(nSide, mDim)
 	adj = createAdjMatrix(nSide, mDim)
 	
-	number_of_images = 5
+	number_of_images = 4
 	state_data = animateIsing2D_Data(nSteps, nSide, temperature, number_of_images)
 	
 	dataset = convert2DState_Pixel(state_data, nSide)
 	print("Dataset: {}".format(dataset))
 	write_gif(dataset, 'rgbbgr.gif', fps=5)
 		
-if __name__ == "__main__":
+if __name__ != "__main__":
     main()
