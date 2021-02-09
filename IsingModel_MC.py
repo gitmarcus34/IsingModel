@@ -410,17 +410,19 @@ def convert2DState_Pixel(state_data, nSide):
 	for state in state_data:
 		pixel_state = dipoles_pixelsConvert(state)
 		pixel_array = np.array(pixel_state)
-		pixel_array.shape = (1, nSide**2, 3)
+		pixel_array.shape = (nSide, nSide)
+		
+		
 		dataset.append(pixel_array)
-	#print("dataset {}".format(dataset))
+	print("dataset {}".format(dataset))
 		
 	return dataset
 		
 def main():
-	nSide = 50
+	nSide = 4
 	mDim = 2
 	temperature = 1
-	nSteps = 1000
+	nSteps = 3
 	
 	state = createRandomState(nSide, mDim)
 	adj = createAdjMatrix(nSide, mDim)
@@ -429,7 +431,7 @@ def main():
 	state_data = animateIsing2D_Data(nSteps, nSide, temperature)
 	
 	dataset = convert2DState_Pixel(state_data, nSide)
-	write_gif(dataset, 'rgbbgr.gif', fps=5)
+	#write_gif(dataset, 'rgbbgr.gif', fps=5)
 	#return dataset
 		
 if __name__ == "__main__":
